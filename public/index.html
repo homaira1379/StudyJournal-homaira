@@ -8,240 +8,289 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <nav>
-            <h1>📚 Study Journal</h1>
-            <ul>
-                <button class="nav-btn active" data-page="home">Home</button>
-                <button class="nav-btn" data-page="journal">My Journal</button>
-                <button class="nav-btn" data-page="quiz">Take Quiz</button>
-                <button class="nav-btn" data-page="progress">Progress</button>
-                <button class="nav-btn" data-page="about">About</button>
-                <button class="nav-btn" data-page="contact">Contact</button>
-            </ul>
-            <div class="theme-selector">
-                <div class="theme-btn default" onclick="changeTheme('default')" title="Default"></div>
-                <div class="theme-btn dark" onclick="changeTheme('dark')" title="Dark"></div>
-                <div class="theme-btn ocean" onclick="changeTheme('ocean')" title="Ocean"></div>
-                <div class="theme-btn sunset" onclick="changeTheme('sunset')" title="Sunset"></div>
-                <div class="theme-btn forest" onclick="changeTheme('forest')" title="Forest"></div>
-            </div>
-        </nav>
+<div class="container">
+    <nav>
+        <h1>📚 Study Journal</h1>
+        <ul>
+            <button class="nav-btn active" data-page="home">Home</button>
+            <button class="nav-btn" data-page="journal">My Journal</button>
+            <button class="nav-btn" data-page="quiz">Take Quiz</button>
+            <button class="nav-btn" data-page="progress">Progress</button>
+            <button class="nav-btn" data-page="about">About</button>
+            <button class="nav-btn" data-page="contact">Contact</button>
+        </ul>
+        <div class="theme-selector">
+            <div class="theme-btn default" onclick="changeTheme('default')" title="Default"></div>
+            <div class="theme-btn dark" onclick="changeTheme('dark')" title="Dark"></div>
+            <div class="theme-btn ocean" onclick="changeTheme('ocean')" title="Ocean"></div>
+            <div class="theme-btn sunset" onclick="changeTheme('sunset')" title="Sunset"></div>
+            <div class="theme-btn forest" onclick="changeTheme('forest')" title="Forest"></div>
+        </div>
+    </nav>
 
-        <div class="content">
-            <!-- Home Page -->
-            <div class="page active" id="home">
-                <div class="hero">
-                    <h2>Welcome to Study Journal</h2>
-                    <p>Your personal learning companion for tracking progress and mastering knowledge</p>
-                    <button class="btn" onclick="navigateToPage('journal')">Start Journaling</button>
-                </div>
-
-                <div class="features">
-                    <div class="feature-card">
-                        <h3>📝 Track Learning</h3>
-                        <p>Record your daily study sessions and monitor your progress over time with detailed logs</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>❓ Quiz Yourself</h3>
-                        <p>Test your knowledge with multiple choice quizzes and reinforce your learning</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>📊 View Progress</h3>
-                        <p>Visualize your learning journey with charts and insights about your study habits</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>💾 Auto-Save</h3>
-                        <p>All your data is automatically saved and persists across sessions</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>🏆 Achievements</h3>
-                        <p>Unlock badges and rewards as you reach learning milestones</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>🎨 Themes</h3>
-                        <p>Customize your experience with multiple color themes</p>
-                    </div>
-                </div>
+    <div class="content">
+        <!-- HOME -->
+        <div class="page active" id="home">
+            <div class="hero">
+                <h2>Welcome to Study Journal</h2>
+                <p>Your personal learning companion for tracking progress and mastering knowledge.</p>
+                <button class="btn" onclick="navigateToPage('journal')">Start Journaling</button>
             </div>
 
-            <!-- Journal Page -->
-            <div class="page" id="journal">
-                <h2 style="color: var(--primary); margin-bottom: 30px;">My Study Journal</h2>
-                
-                <div class="journal-form">
-                    <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 22px;">Add New Entry</h3>
-                    <form id="journalForm">
-                        <div class="form-group">
-                            <label>Subject/Topic</label>
-                            <input type="text" id="subject" placeholder="e.g., Mathematics, History, Programming" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Study Duration (minutes)</label>
-                            <input type="number" id="duration" placeholder="e.g., 60" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Notes & Reflections</label>
-                            <textarea id="notes" placeholder="What did you learn? Any challenges? Key takeaways?" required></textarea>
-                        </div>
-                        <button type="submit" class="btn">Save Entry</button>
-                    </form>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>📝 Track Learning</h3>
+                    <p>Record your daily study sessions and monitor your progress over time.</p>
                 </div>
-
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="🔍 Search journal entries..." onkeyup="searchEntries()">
+                <div class="feature-card">
+                    <h3>❓ Quiz Yourself</h3>
+                    <p>Generate quizzes to test your knowledge and reinforce concepts.</p>
                 </div>
-
-                <h3 style="color: var(--primary); margin: 30px 0 20px; font-size: 22px;">Previous Entries (<span id="entryCount">0</span>)</h3>
-                <div class="journal-entries" id="journalEntries">
-                    <p style="color: var(--text-secondary); text-align: center; padding: 40px; font-size: 16px;">No entries yet. Start by adding your first study session!</p>
+                <div class="feature-card">
+                    <h3>📊 View Progress</h3>
+                    <p>Visualize your learning journey with charts and insights.</p>
                 </div>
-            </div>
-
-            <!-- Quiz Page -->
-            <div class="page" id="quiz">
-                <h2 style="color: var(--primary); margin-bottom: 30px;">Knowledge Quiz</h2>
-
-                <!-- Removed the API Key banner block -->
-
-                <div class="quiz-section">
-                    <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 22px;">Generate Quiz</h3>
-                    <div class="form-group">
-                        <label>Select Topic</label>
-                        <select id="quizTopic">
-                            <option value="Mathematics">Mathematics</option>
-                            <option value="Science">Science</option>
-                            <option value="History">History</option>
-                            <option value="Programming">Programming</option>
-                            <option value="English Literature">English Literature</option>
-                            <option value="Geography">Geography</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Number of Questions</label>
-                        <select id="numQuestions">
-                            <option value="3">3 Questions</option>
-                            <option value="5" selected>5 Questions</option>
-                            <option value="10">10 Questions</option>
-                        </select>
-                    </div>
-                    <button class="btn" id="generateQuizBtn" onclick="generateQuiz()">Generate Quiz</button>
+                <div class="feature-card">
+                    <h3>💾 Auto-Save</h3>
+                    <p>Your notes, quizzes, and stats are stored locally in your browser.</p>
                 </div>
-
-                <div id="quizContent"></div>
-            </div>
-
-            <!-- Progress Page -->
-            <div class="page" id="progress">
-                <h2 style="color: var(--primary); margin-bottom: 30px;">Your Progress</h2>
-                
-                <div class="streak-display">
-                    <h3 id="streakCount">0</h3>
-                    <p>🔥 Day Study Streak</p>
-                </div>
-
-                <div class="stats-grid" id="statsGrid">
-                    <div class="stat-card">
-                        <h3 id="totalEntries">0</h3>
-                        <p>Total Study Sessions</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="totalMinutes">0</h3>
-                        <p>Minutes Studied</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="totalQuizzes">0</h3>
-                        <p>Quizzes Taken</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="avgScore">0%</h3>
-                        <p>Average Quiz Score</p>
-                    </div>
-                </div>
-
-                <div class="achievements">
+                <div class="feature-card">
                     <h3>🏆 Achievements</h3>
-                    <div class="badge-grid" id="badgeGrid"></div>
+                    <p>Unlock badges as you build consistent and effective study habits.</p>
                 </div>
-
-                <div class="chart-container">
-                    <h3>📊 Study Time Over Last 7 Days</h3>
-                    <canvas id="studyChart"></canvas>
-                </div>
-
-                <div class="chart-container">
-                    <h3>📈 Quiz Performance</h3>
-                    <canvas id="quizChart"></canvas>
-                </div>
-
-                <div class="quiz-history">
-                    <h3>Quiz History</h3>
-                    <div id="quizHistoryList">
-                        <p style="color: var(--text-secondary); text-align: center; padding: 20px; font-size: 16px;">No quizzes taken yet. Take your first quiz!</p>
-                    </div>
-                </div>
-
-                <div style="margin-top: 20px; text-align: center;">
-                    <button class="btn btn-secondary" onclick="clearAllData()">Clear All Data</button>
+                <div class="feature-card">
+                    <h3>🎨 Themes</h3>
+                    <p>Switch between multiple color themes to match your mood.</p>
                 </div>
             </div>
+        </div>
 
-            <!-- About Page -->
-            <div class="page" id="about">
-                <div class="about-section">
-                    <h3>What is Study Journal?</h3>
-                    <p>Study Journal is a comprehensive web application designed to help students and learners track their educational progress, test their knowledge, and build better study habits.</p>
+        <!-- JOURNAL -->
+        <div class="page" id="journal">
+            <h2 style="color: var(--primary); margin-bottom: 30px;">My Study Journal</h2>
+
+            <div class="journal-form">
+                <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 22px;">Add New Entry</h3>
+                <form id="journalForm">
+                    <div class="form-group">
+                        <label>Subject/Topic</label>
+                        <input
+                            type="text"
+                            id="subject"
+                            placeholder="e.g., Mathematics, History, Programming"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label>Study Duration (minutes)</label>
+                        <input
+                            type="number"
+                            id="duration"
+                            placeholder="e.g., 60"
+                            min="1"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes & Reflections</label>
+                        <textarea
+                            id="notes"
+                            placeholder="What did you learn? Any challenges? Key takeaways?"
+                            required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Save Entry</button>
+                </form>
+            </div>
+
+            <div class="search-box">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="🔍 Search journal entries..."
+                    onkeyup="searchEntries()">
+            </div>
+
+            <h3 style="color: var(--primary); margin: 30px 0 20px; font-size: 22px;">
+                Previous Entries (<span id="entryCount">0</span>)
+            </h3>
+
+            <div class="journal-entries" id="journalEntries">
+                <p style="color: var(--text-secondary); text-align: center; padding: 40px; font-size: 16px;">
+                    No entries yet. Start by adding your first study session!
+                </p>
+            </div>
+
+            <!-- NOTE VIEW + AI TOOLS -->
+            <div id="noteView" class="note-view hidden">
+                <h3 id="viewTitle">Selected Entry</h3>
+                <div class="note-meta">
+                    <span id="viewSubject"></span> ·
+                    <span id="viewDate"></span> ·
+                    <span id="viewDuration"></span>
+                </div>
+                <div id="viewContent"></div>
+
+                <div class="ai-actions">
+                    <button class="btn btn-small" id="btnSummary">🧠 Summarize with AI</button>
+                    <button class="btn btn-small" id="btnNoteQuiz">❓ Generate AI Quiz</button>
                 </div>
 
-                <div class="about-section">
-                    <h3>Key Features</h3>
-                    <ul>
-                        <li><strong>Study Log:</strong> Keep detailed records of your study sessions</li>
-                        <li><strong>Multiple Choice Quizzes:</strong> Test your understanding</li>
-                        <li><strong>Progress Tracking:</strong> View your study history</li>
-                        <li><strong>Interactive Charts:</strong> Visualize your study patterns</li>
-                        <li><strong>Achievement System:</strong> Unlock badges and rewards</li>
-                        <li><strong>Study Streaks:</strong> Track consecutive days of studying</li>
-                        <li><strong>Search Function:</strong> Find specific journal entries</li>
-                        <li><strong>Theme Customization:</strong> Personalize your experience</li>
+                <div class="ai-output">
+                    <h4>AI Summary</h4>
+                    <div id="viewSummary" class="ai-summary">
+                        Select an entry above, then click <strong>“Summarize with AI”</strong>.
+                    </div>
+
+                    <h4>AI Quiz (Short Q&A)</h4>
+                    <ul id="viewQuiz" class="ai-quiz-list">
+                        <li class="muted">
+                            After summarizing, click <strong>“Generate AI Quiz”</strong> to get practice questions.
+                        </li>
                     </ul>
                 </div>
+            </div>
+        </div>
 
-                <div class="about-section">
-                    <h3>How It Works</h3>
-                    <p><strong>1. Create Study Entries:</strong> Record what you studied and your reflections.</p>
-                    <p><strong>2. Take Quizzes:</strong> Test your knowledge with AI-generated questions.</p>
-                    <p><strong>3. Review Progress:</strong> Check your statistics and charts.</p>
-                    <p><strong>4. Unlock Achievements:</strong> Reach milestones and earn badges.</p>
-                    <p><strong>5. Build Streaks:</strong> Study consistently every day.</p>
+        <!-- QUIZ (TOPIC-BASED) -->
+        <div class="page" id="quiz">
+            <h2 style="color: var(--primary); margin-bottom: 30px;">Knowledge Quiz</h2>
+
+            <div class="quiz-section">
+                <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 22px;">Generate Quiz by Topic</h3>
+                <div class="form-group">
+                    <label>Select Topic</label>
+                    <select id="quizTopic">
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Science">Science</option>
+                        <option value="History">History</option>
+                        <option value="Programming">Programming</option>
+                        <option value="English Literature">English Literature</option>
+                        <option value="Geography">Geography</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Number of Questions</label>
+                    <select id="numQuestions">
+                        <option value="3">3 Questions</option>
+                        <option value="5" selected>5 Questions</option>
+                        <option value="10">10 Questions</option>
+                    </select>
+                </div>
+                <button class="btn" id="generateQuizBtn" onclick="generateQuiz()">Generate Quiz</button>
+            </div>
+
+            <div id="quizContent"></div>
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="page" id="progress">
+            <h2 style="color: var(--primary); margin-bottom: 30px;">Your Progress</h2>
+
+            <div class="streak-display">
+                <h3 id="streakCount">0</h3>
+                <p>🔥 Day Study Streak</p>
+            </div>
+
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <h3 id="totalEntries">0</h3>
+                    <p>Total Study Sessions</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalMinutes">0</h3>
+                    <p>Minutes Studied</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalQuizzes">0</h3>
+                    <p>Quizzes Taken</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="avgScore">0%</h3>
+                    <p>Average Quiz Score</p>
                 </div>
             </div>
 
-            <!-- Contact Page -->
-            <div class="page" id="contact">
-                <h2 style="color: var(--primary); margin-bottom: 30px;">Get In Touch</h2>
-                <div class="contact-info">
-                    <div class="contact-item">
-                        <strong>📱 Phone:</strong>
-                        <span>+1 (555) 123-4567</span>
-                    </div>
-                    <div class="contact-item">
-                        <strong>📧 Email:</strong>
-                        <a href="mailto:contact@studyjournal.com">contact@studyjournal.com</a>
-                    </div>
-                    <div class="contact-item">
-                        <strong>💼 LinkedIn:</strong>
-                        <a href="https://linkedin.com/in/yourprofile" target="_blank">linkedin.com/in/yourprofile</a>
-                    </div>
-                    <div class="contact-item">
-                        <strong>💻 GitHub:</strong>
-                        <a href="https://github.com/yourusername" target="_blank">github.com/yourusername</a>
-                    </div>
+            <div class="achievements">
+                <h3>🏆 Achievements</h3>
+                <div class="badge-grid" id="badgeGrid"></div>
+            </div>
+
+            <div class="chart-container">
+                <h3>📊 Study Time Over Last 7 Days</h3>
+                <canvas id="studyChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>📈 Quiz Performance</h3>
+                <canvas id="quizChart"></canvas>
+            </div>
+
+            <div class="quiz-history">
+                <h3>Quiz History</h3>
+                <div id="quizHistoryList">
+                    <p style="color: var(--text-secondary); text-align: center; padding: 20px; font-size: 16px;">
+                        No quizzes taken yet. Take your first quiz!
+                    </p>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn btn-secondary" onclick="clearAllData()">Clear All Data</button>
+            </div>
+        </div>
+
+        <!-- ABOUT -->
+        <div class="page" id="about">
+            <div class="about-section">
+                <h3>What is Study Journal?</h3>
+                <p>
+                    Study Journal is your personal learning dashboard to capture notes, generate quizzes,
+                    and see your progress over time.
+                </p>
+            </div>
+
+            <div class="about-section">
+                <h3>Key Features</h3>
+                <ul>
+                    <li><strong>Study Log:</strong> Save detailed study notes.</li>
+                    <li><strong>AI Summary & Quiz:</strong> Turn long notes into key points and questions.</li>
+                    <li><strong>Progress Tracking:</strong> Charts & streaks to keep you motivated.</li>
+                    <li><strong>Achievements:</strong> Unlock badges as you study.</li>
+                    <li><strong>Local-First:</strong> Data stored in your browser via localStorage.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- CONTACT -->
+        <div class="page" id="contact">
+            <h2 style="color: var(--primary); margin-bottom: 30px;">Get In Touch</h2>
+            <div class="contact-info">
+                <p style="color: var(--text-secondary); margin-bottom: 15px;">
+                    Feel free to reach out for collaboration, questions about this project, or opportunities.
+                </p>
+
+                <div class="contact-item">
+                    <strong>📧 Email:</strong>
+                    <a href="mailto:humaira.yosufi@gmail.com">humaira.yosufi@gmail.com</a>
+                </div>
+
+                <div class="contact-item">
+                    <strong>💼 LinkedIn:</strong>
+                    <a href="https://www.linkedin.com/in/homaira-yousufi-6983311b5?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app"
+                       target="_blank">
+                        linkedin.com/in/homaira-yousufi
+                    </a>
+                </div>
+
+                <div class="contact-item">
+                    <strong>💻 GitHub:</strong>
+                    <a href="https://github.com/homaira1379" target="_blank">
+                        github.com/homaira1379
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
