@@ -29,7 +29,7 @@
   </nav>
 
   <div class="content">
-    <!-- HOME -->
+    <!-- HOME PAGE -->
     <div class="page active" id="home">
       <div class="hero">
         <h2>Welcome to Study Journal</h2>
@@ -40,32 +40,32 @@
       <div class="features">
         <div class="feature-card">
           <h3>📝 Track Learning</h3>
-          <p>Record your daily study sessions and monitor your progress over time.</p>
+          <p>Record your study sessions with subjects, timing, and reflections.</p>
         </div>
         <div class="feature-card">
-          <h3>❓ Quiz Yourself</h3>
-          <p>Generate quizzes to test your knowledge and reinforce concepts.</p>
+          <h3>🧠 AI Note Tools</h3>
+          <p>Summarize your notes and generate quizzes directly from what you wrote.</p>
         </div>
         <div class="feature-card">
-          <h3>📊 View Progress</h3>
-          <p>Visualize your learning journey with charts and insights.</p>
+          <h3>❓ Topic Quizzes</h3>
+          <p>Generate fresh quizzes on subjects like Math, History, Programming, and more.</p>
         </div>
         <div class="feature-card">
-          <h3>💾 Auto-Save</h3>
-          <p>Your notes, quizzes, and stats are stored locally in your browser.</p>
+          <h3>📊 Progress & Streaks</h3>
+          <p>Visualize your consistency, streak, and performance over time.</p>
         </div>
         <div class="feature-card">
           <h3>🏆 Achievements</h3>
-          <p>Unlock badges as you build consistent and effective study habits.</p>
+          <p>Unlock badges as you study more and quiz regularly.</p>
         </div>
         <div class="feature-card">
           <h3>🎨 Themes</h3>
-          <p>Switch between multiple color themes to match your mood.</p>
+          <p>Switch between multiple color themes to match your style.</p>
         </div>
       </div>
     </div>
 
-    <!-- JOURNAL -->
+    <!-- JOURNAL PAGE -->
     <div class="page" id="journal">
       <h2 style="color: var(--primary); margin-bottom: 30px;">My Study Journal</h2>
 
@@ -77,7 +77,7 @@
             <input
               type="text"
               id="subject"
-              placeholder="e.g., Mathematics, History, Programming"
+              placeholder="e.g., Programming, Biology, Algebra"
               required />
           </div>
           <div class="form-group">
@@ -85,7 +85,7 @@
             <input
               type="number"
               id="duration"
-              placeholder="e.g., 60"
+              placeholder="e.g., 45"
               min="1"
               required />
           </div>
@@ -93,7 +93,7 @@
             <label>Notes & Reflections</label>
             <textarea
               id="notes"
-              placeholder="What did you learn? Any challenges? Key takeaways?"
+              placeholder="Summarize what you studied, key ideas, and what you found difficult."
               required></textarea>
           </div>
           <button type="submit" class="btn">Save Entry</button>
@@ -104,7 +104,7 @@
         <input
           type="text"
           id="searchInput"
-          placeholder="🔍 Search journal entries..."
+          placeholder="🔍 Search journal entries by subject or text..."
           onkeyup="searchEntries()" />
       </div>
 
@@ -118,31 +118,31 @@
         </p>
       </div>
 
-      <!-- NOTE VIEW + AI TOOLS -->
+      <!-- SELECTED NOTE + AI TOOLS -->
       <div id="noteView" class="note-view hidden">
         <h3 id="viewTitle">Selected Entry</h3>
         <div class="note-meta">
           <span id="viewSubject"></span> ·
           <span id="viewDate"></span> ·
-          <span id="viewDuration"></span>
+          <span id="viewDuration"></span> minutes
         </div>
         <div id="viewContent"></div>
 
         <div class="ai-actions">
           <button class="btn btn-small" id="btnSummary">🧠 Summarize with AI</button>
-          <button class="btn btn-small" id="btnNoteQuiz">❓ Generate AI Quiz</button>
+          <button class="btn btn-small" id="btnNoteQuiz">❓ Generate AI Quiz from This Note</button>
         </div>
 
         <div class="ai-output">
           <h4>AI Summary</h4>
           <div id="viewSummary" class="ai-summary">
-            Select an entry above, then click <strong>“Summarize with AI”</strong>.
+            Select a note and click <strong>“Summarize with AI”</strong>.
           </div>
 
-          <h4>AI Quiz (Short Q&A)</h4>
+          <h4>AI Quiz (Based on This Note)</h4>
           <ul id="viewQuiz" class="ai-quiz-list">
             <li class="muted">
-              After summarizing, click <strong>“Generate AI Quiz”</strong> to get practice questions.
+              Generate quick revision questions from your own notes.
             </li>
           </ul>
         </div>
@@ -151,10 +151,10 @@
 
     <!-- TOPIC QUIZ PAGE -->
     <div class="page" id="quiz">
-      <h2 style="color: var(--primary); margin-bottom: 30px;">Knowledge Quiz</h2>
+      <h2 style="color: var(--primary); margin-bottom: 30px;">Take Quiz</h2>
 
       <div class="quiz-section">
-        <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 22px;">Generate Quiz by Topic</h3>
+        <h3 style="color: var(--primary); margin-bottom: 20px;">Generate Quiz by Topic</h3>
         <div class="form-group">
           <label>Select Topic</label>
           <select id="quizTopic">
@@ -180,7 +180,7 @@
       <div id="quizContent"></div>
     </div>
 
-    <!-- PROGRESS -->
+    <!-- PROGRESS PAGE -->
     <div class="page" id="progress">
       <h2 style="color: var(--primary); margin-bottom: 30px;">Your Progress</h2>
 
@@ -189,7 +189,7 @@
         <p>🔥 Day Study Streak</p>
       </div>
 
-      <div class="stats-grid" id="statsGrid">
+      <div class="stats-grid">
         <div class="stat-card">
           <h3 id="totalEntries">0</h3>
           <p>Total Study Sessions</p>
@@ -237,52 +237,29 @@
       </div>
     </div>
 
-    <!-- ABOUT -->
+    <!-- ABOUT PAGE -->
     <div class="page" id="about">
       <div class="about-section">
-        <h3>What is Study Journal?</h3>
+        <h3>About Study Journal</h3>
         <p>
-          Study Journal is your personal learning companion. It helps you capture study notes,
-          generate AI-powered summaries and quizzes, and track your progress over time in one
-          simple, focused dashboard.
+          Study Journal is a smart learning assistant built by Homaira Yousufi.
+          It helps students organize notes, generate AI-powered summaries and quizzes,
+          track progress, and stay motivated with achievements and streaks.
         </p>
       </div>
 
       <div class="about-section">
-        <h3>Key Features</h3>
+        <h3>How It Works</h3>
         <ul>
-          <li><strong>Study Log:</strong> Add structured entries with subject, duration, and reflections.</li>
-          <li><strong>AI Summary & Quiz:</strong> Turn your notes into key points and practice questions
-            (when an API key is available).</li>
-          <li><strong>Progress Tracking:</strong> Charts, streaks, and stats to keep you motivated.</li>
-          <li><strong>Achievements:</strong> Unlock badges for consistency, time invested, and quiz scores.</li>
-          <li><strong>Searchable Notes:</strong> Quickly find past entries by keyword or subject.</li>
-          <li><strong>Themes:</strong> Multiple color themes to suit your style.</li>
-          <li><strong>Local-First:</strong> Data stored in your browser via <code>localStorage</code>.</li>
-        </ul>
-      </div>
-
-      <div class="about-section">
-        <h3>How to Use Study Journal</h3>
-        <p><strong>1.</strong> Use <em>My Journal</em> to record each study session.</p>
-        <p><strong>2.</strong> Open entries to reflect and generate AI summaries & quizzes (if configured).</p>
-        <p><strong>3.</strong> Visit <em>Take Quiz</em> for topic-based MCQs.</p>
-        <p><strong>4.</strong> Check <em>Progress</em> to see charts, streaks, and badges.</p>
-      </div>
-
-      <div class="about-section">
-        <h3>Tech Stack</h3>
-        <ul>
-          <li><strong>Frontend:</strong> HTML, CSS, JavaScript</li>
-          <li><strong>Charts:</strong> Chart.js</li>
-          <li><strong>Storage:</strong> Browser <code>localStorage</code></li>
-          <li><strong>AI Integration:</strong> Vercel serverless API + OpenAI</li>
-          <li><strong>Deployment:</strong> GitHub + Vercel</li>
+          <li>Add study notes with subject, duration, and reflections.</li>
+          <li>Select a note → use AI to summarize and generate a custom quiz.</li>
+          <li>Use the Take Quiz page to generate topic-based quizzes any time.</li>
+          <li>View your streak, charts, and badges on the Progress page.</li>
         </ul>
       </div>
     </div>
 
-    <!-- CONTACT -->
+    <!-- CONTACT PAGE -->
     <div class="page" id="contact">
       <h2 style="color: var(--primary); margin-bottom: 30px;">Get In Touch</h2>
       <div class="contact-info">
@@ -293,16 +270,12 @@
         <div class="contact-item">
           <strong>💼 LinkedIn:</strong>
           <a href="https://www.linkedin.com/in/homaira-yousufi-6983311b5"
-             target="_blank" rel="noopener">
-            linkedin.com/in/homaira-yousufi-6983311b5
-          </a>
+             target="_blank">linkedin.com/in/homaira-yousufi-6983311b5</a>
         </div>
         <div class="contact-item">
           <strong>💻 GitHub:</strong>
           <a href="https://github.com/homaira1379"
-             target="_blank" rel="noopener">
-            github.com/homaira1379
-          </a>
+             target="_blank">github.com/homaira1379</a>
         </div>
       </div>
     </div>
