@@ -1,502 +1,452 @@
 // ========= NAVIGATION =========
-const navButtons = document.querySelectorAll(".nav-btn");
-const pages = document.querySelectorAll(".page");
+const navButtons = document.querySelectorAll('.nav-btn');
+const pages = document.querySelectorAll('.page');
 
 function navigateToPage(pageName) {
-  navButtons.forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.page === pageName);
+  navButtons.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.page === pageName);
+  });
+  pages.forEach(page => {
+    page.classList.toggle('active', page.id === pageName);
   });
 
-  pages.forEach((page) => {
-    page.classList.toggle("active", page.id === pageName);
-  });
-
-  if (pageName === "progress") {
+  if (pageName === 'progress') {
     updateProgressStats();
     renderCharts();
   }
 }
 
-navButtons.forEach((btn) =>
-  btn.addEventListener("click", () => navigateToPage(btn.dataset.page))
+navButtons.forEach(btn =>
+  btn.addEventListener('click', () => navigateToPage(btn.dataset.page))
 );
 
 // ========= THEME =========
 function changeTheme(theme) {
-  document.body.className = theme === "default" ? "" : `${theme}-theme`;
-  localStorage.setItem("theme", theme);
+  document.body.className = theme === 'default' ? '' : `${theme}-theme`;
+  localStorage.setItem('theme', theme);
 }
-
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme && savedTheme !== "default") {
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme && savedTheme !== 'default') {
   document.body.className = `${savedTheme}-theme`;
 }
 
 // ========= DATA STORAGE =========
-let journalEntries = JSON.parse(localStorage.getItem("journalEntries") || "[]");
-let quizHistory = JSON.parse(localStorage.getItem("quizHistory") || "[]");
+let journalEntries = JSON.parse(localStorage.getItem('journalEntries') || '[]');
+let quizHistory = JSON.parse(localStorage.getItem('quizHistory') || '[]');
 
 function saveData() {
-  localStorage.setItem("journalEntries", JSON.stringify(journalEntries));
-  localStorage.setItem("quizHistory", JSON.stringify(quizHistory));
+  localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
+  localStorage.setItem('quizHistory', JSON.stringify(quizHistory));
 }
 
-// ========= BADGES / HELPERS =========
+// ========= HELPERS =========
 function getTotalMinutes() {
-  return journalEntries.reduce((sum, e) => sum + e.duration, 0);
+  return journalEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
 }
 
 function calculateStreak() {
-  if (!journalEntries.length) return 0;
-
+  if (journalEntries.length === 0) return 0;
   const sorted = [...journalEntries].sort(
     (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
   );
-
   let streak = 0;
-  let cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
+  let cur = new Date();
+  cur.setHours(0, 0, 0, 0);
 
   for (const entry of sorted) {
     const d = new Date(entry.timestamp);
     d.setHours(0, 0, 0, 0);
-    const diffDays = Math.floor((cursor - d) / 86400000);
-
-    if (diffDays === streak) {
+    const diff = Math.floor((cur - d) / 86400000);
+    if (diff === streak) {
       streak++;
-      cursor = d;
-    } else if (diffDays > streak) {
+      cur = d;
+    } else if (diff > streak) {
       break;
     }
   }
-
   return streak;
 }
 
+// ========= BADGES =========
 const badges = [
-  { id: "first_entry", name: "First Step", icon: "🎯", condition: () => journalEntries.length >= 1 },
-  { id: "five_entries", name: "5 Sessions", icon: "📚", condition: () => journalEntries.length >= 5 },
-  { id: "ten_entries", name: "10 Sessions", icon: "🔥", condition: () => journalEntries.length >= 10 },
-  { id: "first_quiz", name: "Quiz Taker", icon: "❓", condition: () => quizHistory.length >= 1 },
-  { id: "five_quizzes", name: "5 Quizzes", icon: "🧠", condition: () => quizHistory.length >= 5 },
-  { id: "ten_quizzes", name: "10 Quizzes", icon: "🎓", condition: () => quizHistory.length >= 10 },
-  { id: "hundred_minutes", name: "100 Minutes", icon: "⏱️", condition: () => getTotalMinutes() >= 100 },
-  { id: "thousand_minutes", name: "1000 Minutes", icon: "⚡", condition: () => getTotalMinutes() >= 1000 },
-  { id: "perfect_score", name: "Perfect Score", icon: "💯", condition: () => quizHistory.some(q => q.percentage === 100) },
-  { id: "streak_7", name: "7 Day Streak", icon: "🔥", condition: () => calculateStreak() >= 7 }
+  { id: 'first_entry',   name: 'First Step',        icon: '🎯', condition: () => journalEntries.length >= 1 },
+  { id: 'five_entries',  name: '5 Sessions',        icon: '📚', condition: () => journalEntries.length >= 5 },
+  { id: 'ten_entries',   name: '10 Sessions',       icon: '🔥', condition: () => journalEntries.length >= 10 },
+  { id: 'first_quiz',    name: 'Quiz Taker',        icon: '❓', condition: () => quizHistory.length >= 1 },
+  { id: 'five_quizzes',  name: '5 Quizzes',         icon: '🧠', condition: () => quizHistory.length >= 5 },
+  { id: 'ten_quizzes',   name: '10 Quizzes',        icon: '🎓', condition: () => quizHistory.length >= 10 },
+  { id: 'hundred_minutes',  name: '100 Minutes',    icon: '⏱️', condition: () => getTotalMinutes() >= 100 },
+  { id: 'thousand_minutes', name: '1000 Minutes',   icon: '⚡', condition: () => getTotalMinutes() >= 1000 },
+  { id: 'perfect_score',    name: 'Perfect Score',  icon: '💯', condition: () => quizHistory.some(q => q.percentage === 100) },
+  { id: 'streak_7',         name: '7 Day Streak',   icon: '🔥', condition: () => calculateStreak() >= 7 }
 ];
 
 function displayBadges() {
-  const grid = document.getElementById("badgeGrid");
+  const grid = document.getElementById('badgeGrid');
   if (!grid) return;
-
-  grid.innerHTML = badges
-    .map(
-      (b) => `
-      <div class="badge ${b.condition() ? "unlocked" : "locked"}">
-        <div class="icon">${b.icon}</div>
-        <div class="name">${b.name}</div>
-      </div>
-    `
-    )
-    .join("");
+  grid.innerHTML = badges.map(b => `
+    <div class="badge ${b.condition() ? 'unlocked':'locked'}">
+      <div class="icon">${b.icon}</div>
+      <div class="name">${b.name}</div>
+    </div>
+  `).join('');
 }
 
 // ========= JOURNAL =========
-const journalForm = document.getElementById("journalForm");
-const journalEntriesDiv = document.getElementById("journalEntries");
-const entryCountSpan = document.getElementById("entryCount");
+const journalForm = document.getElementById('journalForm');
+const noteView = document.getElementById('noteView');
+const viewTitle = document.getElementById('viewTitle');
+const viewSubject = document.getElementById('viewSubject');
+const viewDate = document.getElementById('viewDate');
+const viewDuration = document.getElementById('viewDuration');
+const viewContent = document.getElementById('viewContent');
+const viewSummary = document.getElementById('viewSummary');
+const viewQuiz = document.getElementById('viewQuiz');
 
-journalForm?.addEventListener("submit", (e) => {
+let selectedEntryId = null;
+
+journalForm?.addEventListener('submit', (e) => {
   e.preventDefault();
-
-  const subject = document.getElementById("subject").value.trim();
-  const duration = parseInt(document.getElementById("duration").value, 10);
-  const notes = document.getElementById("notes").value.trim();
+  const subject = document.getElementById('subject').value.trim();
+  const duration = parseInt(document.getElementById('duration').value, 10);
+  const notes = document.getElementById('notes').value.trim();
 
   if (!subject || !notes || !duration || duration <= 0) {
-    alert("Please fill in all fields with valid values.");
+    alert('Please fill in all fields.');
     return;
   }
 
+  const now = new Date();
   const entry = {
     id: Date.now(),
     subject,
     duration,
     notes,
-    date: new Date().toLocaleDateString(),
-    timestamp: new Date().toISOString()
+    date: now.toLocaleDateString(),
+    timestamp: now.toISOString()
   };
 
   journalEntries.unshift(entry);
   saveData();
   displayJournalEntries();
   journalForm.reset();
-  alert("Entry saved successfully! 🎉");
+  alert('Entry saved successfully! 🎉');
 });
 
-function displayJournalEntries(filter = "") {
-  if (!journalEntriesDiv) return;
+function displayJournalEntries(filter = '') {
+  const container = document.getElementById('journalEntries');
+  const count = document.getElementById('entryCount');
+  if (!container) return;
 
   let list = journalEntries;
-  const f = filter.trim().toLowerCase();
-
-  if (f) {
+  if (filter) {
+    const f = filter.toLowerCase();
     list = journalEntries.filter(
-      (e) =>
+      e =>
         e.subject.toLowerCase().includes(f) ||
         e.notes.toLowerCase().includes(f)
     );
   }
 
-  if (entryCountSpan) entryCountSpan.textContent = list.length;
+  if (count) count.textContent = list.length;
 
   if (!list.length) {
-    journalEntriesDiv.innerHTML =
+    container.innerHTML =
       '<p style="color: var(--text-secondary); text-align: center; padding: 40px; font-size: 16px;">No entries found.</p>';
-    hideNoteView();
+    noteView?.classList.add('hidden');
     return;
   }
 
-  journalEntriesDiv.innerHTML = list
-    .map(
-      (e) => `
-      <div class="journal-entry" onclick="openNoteView(${e.id})">
+  container.innerHTML = list
+    .map(e => `
+      <div class="journal-entry" onclick="openNote(${e.id})">
         <button class="delete-btn" onclick="deleteEntry(${e.id}); event.stopPropagation();">Delete</button>
         <h4>${e.subject}</h4>
-        <div class="meta">📅 ${e.date} &nbsp; | &nbsp; ⏱️ ${e.duration} minutes</div>
-        <p>${e.notes}</p>
+        <div class="meta">
+          📅 ${e.date} &nbsp; | &nbsp; ⏱️ ${e.duration} min
+        </div>
+        <p>${e.notes.length > 220 ? e.notes.slice(0, 220) + '…' : e.notes}</p>
       </div>
-    `
-    )
-    .join("");
-
-  // If a note is currently selected but filtered out, hide.
-  const current = selectedNote
-    ? list.find((e) => e.id === selectedNote.id)
-    : null;
-  if (!current) hideNoteView();
+    `)
+    .join('');
 }
 
 function searchEntries() {
-  const term = document.getElementById("searchInput").value || "";
+  const term = document.getElementById('searchInput').value;
   displayJournalEntries(term);
 }
 
 function deleteEntry(id) {
-  if (!confirm("Delete this entry?")) return;
-  journalEntries = journalEntries.filter((e) => e.id !== id);
+  if (!confirm('Delete this entry?')) return;
+  journalEntries = journalEntries.filter(e => e.id !== id);
+  if (selectedEntryId === id) {
+    selectedEntryId = null;
+    noteView?.classList.add('hidden');
+  }
   saveData();
   displayJournalEntries();
+  updateProgressStats();
 }
 
-// ========= NOTE VIEW + AI SUMMARY & QUIZ =========
-let selectedNote = null;
-
-const noteView = document.getElementById("noteView");
-const viewTitle = document.getElementById("viewTitle");
-const viewSubject = document.getElementById("viewSubject");
-const viewDate = document.getElementById("viewDate");
-const viewDuration = document.getElementById("viewDuration");
-const viewContent = document.getElementById("viewContent");
-const viewSummary = document.getElementById("viewSummary");
-const viewQuiz = document.getElementById("viewQuiz");
-const btnSummary = document.getElementById("btnSummary");
-const btnNoteQuiz = document.getElementById("btnNoteQuiz");
-
-function hideNoteView() {
-  if (noteView) noteView.classList.add("hidden");
-  selectedNote = null;
-}
-
-window.openNoteView = function (id) {
-  const entry = journalEntries.find((e) => e.id === id);
+window.openNote = function(id) {
+  const entry = journalEntries.find(e => e.id === id);
   if (!entry || !noteView) return;
+  selectedEntryId = id;
 
-  selectedNote = entry;
-
-  viewTitle.textContent = entry.subject || "Selected Entry";
-  viewSubject.textContent = entry.subject || "";
-  viewDate.textContent = entry.date || "";
+  viewTitle.textContent = entry.subject;
+  viewSubject.textContent = entry.subject;
+  viewDate.textContent = entry.date;
   viewDuration.textContent = `${entry.duration} min`;
-  viewContent.textContent = entry.notes || "";
+  viewContent.textContent = entry.notes;
 
   viewSummary.textContent =
     'Click "Summarize with AI" to generate a short summary of this note.';
   viewQuiz.innerHTML =
-    '<li class="muted">Click "Generate AI Quiz" to create practice questions from this note.</li>';
+    '<li class="muted">Click "Generate AI Quiz" to create quick practice questions from this note.</li>';
 
-  noteView.classList.remove("hidden");
+  noteView.classList.remove('hidden');
 };
 
-// call OpenAI proxy
-async function callChatApi(payload) {
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await res.json();
-  if (!res.ok) {
-    console.error("OpenAI error:", data);
-    throw new Error(data.error?.message || data.error || "API error");
+// ========= AI HELPERS =========
+function extractJsonFromContent(content) {
+  if (!content || typeof content !== 'string') return null;
+  let trimmed = content.trim();
+  if (trimmed.startsWith('```')) {
+    trimmed = trimmed.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
   }
-
-  let content = data.choices?.[0]?.message?.content;
-  if (typeof content !== "string") {
-    throw new Error("Invalid AI response format.");
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
   }
-
-  // strip code fences if present
-  content = content.trim();
-  if (content.startsWith("```")) {
-    content = content
-      .replace(/^```(?:json)?/i, "")
-      .replace(/```$/, "")
-      .trim();
-  }
-
-  return content;
 }
 
-// AI Summary for selected note
-async function generateNoteSummary() {
-  if (!selectedNote) {
-    alert("Please select a journal entry first.");
+// ========= AI SUMMARY FOR NOTE =========
+const btnSummary = document.getElementById('btnSummary');
+btnSummary?.addEventListener('click', async () => {
+  if (!selectedEntryId) {
+    alert('Please select a note first.');
     return;
   }
+  const entry = journalEntries.find(e => e.id === selectedEntryId);
+  if (!entry) return;
 
-  btnSummary.disabled = true;
-  btnSummary.textContent = "Summarizing...";
-  viewSummary.textContent = "Generating summary...";
+  viewSummary.textContent = 'Generating summary...';
 
   try {
-    const content = await callChatApi({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: `Summarize the following study note into 3-5 concise bullet points, aimed at a student reviewing for an exam:\n\n${selectedNote.notes}`
-        }
-      ],
-      temperature: 0.5
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{
+          role: 'user',
+          content:
+            `Summarize this study note into 3-5 bullet points for a student:\n\n${entry.notes}`
+        }],
+        temperature: 0.4
+      })
     });
 
-    // allow either plain text bullets or JSON; just show as-is
-    const bullets = content
-      .split(/\n+/)
-      .map((line) => line.replace(/^[-*]\s*/, "").trim())
-      .filter(Boolean);
+    const data = await res.json();
+    if (!res.ok) {
+      throw data;
+    }
 
+    let content = data.choices?.[0]?.message?.content || '';
+    if (content.startsWith('```')) {
+      content = content.replace(/^```(?:markdown)?/i, '').replace(/```$/, '');
+    }
+    viewSummary.textContent = content.trim();
+  } catch (err) {
+    console.error(err);
     viewSummary.innerHTML =
-      "<ul>" +
-      bullets.map((b) => `<li>${b}</li>`).join("") +
-      "</ul>";
-  } catch (err) {
-    console.error(err);
-    viewSummary.textContent =
-      "❌ Could not generate summary. Please try again.";
-  } finally {
-    btnSummary.disabled = false;
-    btnSummary.textContent = "🧠 Summarize with AI";
+      '❌ Could not generate summary. Please try again or check your API key / quota.';
   }
-}
+});
 
-// AI Quiz based on selected note
-async function generateNoteQuiz() {
-  if (!selectedNote) {
-    alert("Please select a journal entry first.");
+// ========= AI QUIZ FROM NOTE =========
+const btnNoteQuiz = document.getElementById('btnNoteQuiz');
+btnNoteQuiz?.addEventListener('click', async () => {
+  if (!selectedEntryId) {
+    alert('Please select a note first.');
     return;
   }
+  const entry = journalEntries.find(e => e.id === selectedEntryId);
+  if (!entry) return;
 
-  btnNoteQuiz.disabled = true;
-  btnNoteQuiz.textContent = "Generating...";
-  viewQuiz.innerHTML = "<li>Creating questions...</li>";
+  viewQuiz.innerHTML = '<li class="muted">Generating quiz questions...</li>';
 
   try {
-    const content = await callChatApi({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: `Create 3 short Q&A pairs based ONLY on this study note:\n\n${selectedNote.notes}\n\nReturn ONLY valid JSON in this exact format:\n[\n  { "question": "Question text?", "answer": "Short answer." }\n]`
-        }
-      ],
-      temperature: 0.7
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{
+          role: 'user',
+          content:
+`Create 3 short Q&A style quiz questions based on this note.
+Return ONLY JSON in this format:
+[
+  {"question":"...","answer":"..."},
+  {"question":"...","answer":"..."},
+  {"question":"...","answer":"..."}
+]
+Note:
+- Keep questions simple.
+- Focus only on this note.
+
+Note text:
+${entry.notes}`
+        }],
+        temperature: 0.5
+      })
     });
 
-    let qa;
-    try {
-      qa = JSON.parse(content);
-    } catch (e) {
-      console.warn("Failed to parse AI JSON, raw content:", content);
-      throw new Error(
-        "AI response was not valid JSON. Please click Generate AI Quiz again."
-      );
+    const data = await res.json();
+    if (!res.ok) throw data;
+
+    const content = data.choices?.[0]?.message?.content || '';
+    const quiz = extractJsonFromContent(content);
+
+    if (!Array.isArray(quiz) || !quiz.length) {
+      throw new Error('Invalid AI response format');
     }
 
-    if (!Array.isArray(qa) || !qa.length) {
-      throw new Error("Empty quiz returned. Try again.");
-    }
-
-    viewQuiz.innerHTML = qa
-      .map(
-        (item, i) => `
-        <li>
-          <strong>Q${i + 1}:</strong> ${item.question || "—"}<br>
-          <strong>A:</strong> ${item.answer || "—"}
-        </li>
-      `
-      )
-      .join("");
+    viewQuiz.innerHTML = quiz
+      .map(q => `<li><strong>Q:</strong> ${q.question}<br/><strong>A:</strong> ${q.answer}</li>`)
+      .join('');
   } catch (err) {
     console.error(err);
-    viewQuiz.innerHTML = `<li class="muted">❌ ${err.message}</li>`;
-  } finally {
-    btnNoteQuiz.disabled = false;
-    btnNoteQuiz.textContent = "❓ Generate AI Quiz";
+    viewQuiz.innerHTML =
+      '<li class="muted">❌ Error generating quiz. This may be due to API quota or configuration.</li>';
   }
-}
+});
 
-btnSummary?.addEventListener("click", generateNoteSummary);
-btnNoteQuiz?.addEventListener("click", generateNoteQuiz);
-
-// ========= TOPIC QUIZ PAGE (existing) =========
+// ========= TOPIC QUIZ PAGE (MCQ) =========
 let currentQuiz = null;
 let userAnswers = [];
 
 async function generateQuiz() {
-  const topic = document.getElementById("quizTopic").value || "general";
-  const numQuestions = document.getElementById("numQuestions").value || 5;
-  const btn = document.getElementById("generateQuizBtn");
-  const quizContent = document.getElementById("quizContent");
+  const topic = document.getElementById('quizTopic').value || 'general knowledge';
+  const numQuestions = parseInt(document.getElementById('numQuestions').value || '5', 10);
+  const btn = document.getElementById('generateQuizBtn');
+  const quizContent = document.getElementById('quizContent');
 
   btn.disabled = true;
-  btn.textContent = "Generating Quiz...";
-  quizContent.innerHTML =
-    '<div class="loading">🔄 Creating your quiz... Please wait.</div>';
+  btn.textContent = 'Generating Quiz...';
+  quizContent.innerHTML = '<div class="loading">🔄 Creating your quiz... Please wait.</div>';
 
   try {
-    const content = await callChatApi({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: `Create ${numQuestions} multiple-choice questions about ${topic}.
-Return ONLY valid JSON in this exact structure:
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{
+          role: 'user',
+          content:
+`Create ${numQuestions} multiple choice questions about ${topic}.
+Return ONLY a JSON array like:
 [
   {
-    "question": "Question text?",
+    "question": "Question text",
     "options": ["A","B","C","D"],
     "correctAnswer": 0
   }
 ]`
-        }
-      ],
-      temperature: 0.7
+        }],
+        temperature: 0.7
+      })
     });
 
-    let quizData;
-    try {
-      quizData = JSON.parse(content);
-    } catch (e) {
-      console.warn("Failed to parse topic quiz JSON", content);
-      throw new Error("AI response was not valid JSON. Try again.");
-    }
+    const data = await res.json();
+    if (!res.ok) throw data;
+
+    const content = data.choices?.[0]?.message?.content || '';
+    const quizData = extractJsonFromContent(content);
 
     if (!Array.isArray(quizData) || !quizData.length) {
-      throw new Error("No questions returned. Try again.");
+      throw new Error('Invalid quiz format from AI.');
     }
 
-    currentQuiz = {
-      topic,
-      questions: quizData,
-      startTime: new Date()
-    };
+    currentQuiz = { topic, questions: quizData, startTime: new Date() };
     userAnswers = new Array(quizData.length).fill(null);
-
     displayQuiz();
   } catch (err) {
     console.error(err);
     quizContent.innerHTML = `
       <div class="api-warning">
-        <h4>❌ Error Generating Quiz</h4>
-        <p>${err.message}</p>
+        <strong>❌ Error Generating Quiz</strong><br/>
+        You may have an API configuration or quota issue.
       </div>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = "Generate Quiz";
+    btn.textContent = 'Generate Quiz';
   }
 }
 
 function displayQuiz() {
-  const quizContent = document.getElementById("quizContent");
-
+  const quizContent = document.getElementById('quizContent');
   quizContent.innerHTML = `
     <div class="quiz-container">
-      <h3 style="color: var(--primary); margin-bottom: 25px; font-size: 24px;">Answer the following questions:</h3>
-      ${currentQuiz.questions
-        .map(
-          (q, qIndex) => `
+      <h3 style="color: var(--primary); margin-bottom: 25px; font-size: 22px;">Answer the questions:</h3>
+      ${currentQuiz.questions.map((q, qIndex) => `
         <div class="question">
           <h4>Question ${qIndex + 1}: ${q.question}</h4>
           <div class="options">
-            ${q.options
-              .map(
-                (opt, oIndex) => `
+            ${q.options.map((opt, oIndex) => `
               <div class="option"
-                   onclick="selectOption(${qIndex}, ${oIndex})"
                    data-q="${qIndex}"
-                   data-o="${oIndex}">
+                   data-o="${oIndex}"
+                   onclick="selectOption(${qIndex}, ${oIndex})">
                 ${String.fromCharCode(65 + oIndex)}. ${opt}
-              </div>`
-              )
-              .join("")}
+              </div>
+            `).join('')}
           </div>
-        </div>`
-        )
-        .join("")}
-      <button class="btn" onclick="submitQuiz()" style="margin-top: 20px;">Submit Quiz</button>
+        </div>
+      `).join('')}
+      <button class="btn" id="submitQuizBtn" style="margin-top: 10px;">Submit Quiz</button>
     </div>
   `;
+
+  document
+    .getElementById('submitQuizBtn')
+    .addEventListener('click', submitQuiz);
 }
 
-window.selectOption = function (qIdx, oIdx) {
-  const opts = document.querySelectorAll(`[data-q="${qIdx}"]`);
-  opts.forEach((el) => el.classList.remove("selected"));
-  document
-    .querySelector(`[data-q="${qIdx}"][data-o="${oIdx}"]`)
-    .classList.add("selected");
+window.selectOption = function(qIdx, oIdx) {
+  const opts = document.querySelectorAll(`.option[data-q="${qIdx}"]`);
+  opts.forEach(el => el.classList.remove('selected'));
+  const chosen = document.querySelector(`.option[data-q="${qIdx}"][data-o="${oIdx}"]`);
+  if (chosen) chosen.classList.add('selected');
   userAnswers[qIdx] = oIdx;
 };
 
 function submitQuiz() {
+  if (!currentQuiz) return;
   if (userAnswers.includes(null)) {
-    alert("Please answer all questions before submitting!");
+    alert('Please answer all questions before submitting.');
     return;
   }
 
   let correct = 0;
 
   currentQuiz.questions.forEach((q, idx) => {
-    const opts = document.querySelectorAll(`[data-q="${idx}"]`);
+    const opts = document.querySelectorAll(`.option[data-q="${idx}"]`);
     opts.forEach((el, oi) => {
-      if (oi === q.correctAnswer) el.classList.add("correct");
+      if (oi === q.correctAnswer) el.classList.add('correct');
       else if (oi === userAnswers[idx] && userAnswers[idx] !== q.correctAnswer) {
-        el.classList.add("incorrect");
+        el.classList.add('incorrect');
       }
-      el.style.pointerEvents = "none";
+      el.style.pointerEvents = 'none';
     });
-
     if (userAnswers[idx] === q.correctAnswer) correct++;
   });
 
-  const percentage = Math.round(
-    (correct / currentQuiz.questions.length) * 100
-  );
-
-  quizHistory.unshift({
+  const percentage = Math.round((correct / currentQuiz.questions.length) * 100);
+  const item = {
     id: Date.now(),
     topic: currentQuiz.topic,
     score: correct,
@@ -504,54 +454,53 @@ function submitQuiz() {
     percentage,
     date: new Date().toLocaleDateString(),
     timestamp: new Date().toISOString()
-  });
+  };
+  quizHistory.unshift(item);
   saveData();
 
+  const quizContent = document.getElementById('quizContent');
   const resultHTML = `
     <div class="quiz-result">
       <h3>Quiz Complete! 🎉</h3>
-      <p>You scored ${correct} / ${
-    currentQuiz.questions.length
-  } (${percentage}%)</p>
-      <button class="btn" onclick="generateQuiz()" style="margin-top: 20px;">Take Another Quiz</button>
+      <p>You scored ${correct} / ${currentQuiz.questions.length} (${percentage}%)</p>
     </div>
   `;
+  quizContent.insertAdjacentHTML('beforeend', resultHTML);
 
-  document
-    .getElementById("quizContent")
-    .insertAdjacentHTML("beforeend", resultHTML);
-  document.querySelector(".quiz-container button").remove();
+  const submitBtn = document.getElementById('submitQuizBtn');
+  if (submitBtn) submitBtn.remove();
+
+  updateProgressStats();
 }
 
 // ========= STATS & CHARTS =========
 function updateProgressStats() {
-  const totalEntriesEl = document.getElementById("totalEntries");
-  const totalMinutesEl = document.getElementById("totalMinutes");
-  const totalQuizzesEl = document.getElementById("totalQuizzes");
-  const avgScoreEl = document.getElementById("avgScore");
-  const streakCountEl = document.getElementById("streakCount");
+  const totalEntriesEl = document.getElementById('totalEntries');
+  const totalMinutesEl = document.getElementById('totalMinutes');
+  const totalQuizzesEl = document.getElementById('totalQuizzes');
+  const avgScoreEl = document.getElementById('avgScore');
+  const streakCountEl = document.getElementById('streakCount');
 
-  if (totalEntriesEl) totalEntriesEl.textContent = journalEntries.length;
-  if (totalMinutesEl) totalMinutesEl.textContent = getTotalMinutes();
-  if (totalQuizzesEl) totalQuizzesEl.textContent = quizHistory.length;
+  if (!totalEntriesEl) return;
 
-  const avg =
-    quizHistory.length > 0
-      ? Math.round(
-          quizHistory.reduce((s, q) => s + q.percentage, 0) /
-            quizHistory.length
-        )
-      : 0;
+  totalEntriesEl.textContent = journalEntries.length;
+  totalMinutesEl.textContent = getTotalMinutes();
+  totalQuizzesEl.textContent = quizHistory.length;
 
-  if (avgScoreEl) avgScoreEl.textContent = `${avg}%`;
-  if (streakCountEl) streakCountEl.textContent = calculateStreak();
+  const avg = quizHistory.length
+    ? Math.round(
+        quizHistory.reduce((s, q) => s + (q.percentage || 0), 0) / quizHistory.length
+      )
+    : 0;
+  avgScoreEl.textContent = `${avg}%`;
+  streakCountEl.textContent = calculateStreak();
 
   displayQuizHistory();
   displayBadges();
 }
 
 function displayQuizHistory() {
-  const container = document.getElementById("quizHistoryList");
+  const container = document.getElementById('quizHistoryList');
   if (!container) return;
 
   if (!quizHistory.length) {
@@ -562,15 +511,13 @@ function displayQuizHistory() {
 
   container.innerHTML = quizHistory
     .slice(0, 10)
-    .map(
-      (q) => `
+    .map(q => `
       <div class="quiz-history-item">
         <span>${q.topic} - ${q.date}</span>
         <span class="quiz-score">${q.score}/${q.total} (${q.percentage}%)</span>
       </div>
-    `
-    )
-    .join("");
+    `)
+    .join('');
 }
 
 let studyChart = null;
@@ -582,10 +529,10 @@ function renderCharts() {
 }
 
 function renderStudyChart() {
-  const canvas = document.getElementById("studyChart");
+  const canvas = document.getElementById('studyChart');
   if (!canvas) return;
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   const last7Days = [];
   const minutes = [];
   const today = new Date();
@@ -594,46 +541,40 @@ function renderStudyChart() {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     d.setHours(0, 0, 0, 0);
-
-    const label = d.toLocaleDateString();
-    last7Days.push(label);
+    last7Days.push(d.toLocaleDateString());
 
     const m = journalEntries
-      .filter((e) => {
+      .filter(e => {
         const ed = new Date(e.timestamp);
         ed.setHours(0, 0, 0, 0);
         return ed.getTime() === d.getTime();
       })
-      .reduce((s, e) => s + e.duration, 0);
+      .reduce((s, e) => s + (e.duration || 0), 0);
 
     minutes.push(m);
   }
 
   if (studyChart) studyChart.destroy();
-
   studyChart = new Chart(ctx, {
-    type: "bar",
+    type: 'bar',
     data: {
       labels: last7Days,
-      datasets: [
-        {
-          label: "Study Minutes",
-          data: minutes,
-          backgroundColor: "rgba(102,126,234,.6)",
-          borderColor: "rgba(102,126,234,1)",
-          borderWidth: 2
-        }
-      ]
+      datasets: [{
+        label: 'Study Minutes',
+        data: minutes
+      }]
     },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } }
+    }
   });
 }
 
 function renderQuizChart() {
-  const canvas = document.getElementById("quizChart");
+  const canvas = document.getElementById('quizChart');
   if (!canvas) return;
-
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
 
   if (!quizHistory.length) {
     if (quizChart) quizChart.destroy();
@@ -642,52 +583,53 @@ function renderQuizChart() {
 
   const last10 = quizHistory.slice(0, 10).reverse();
   const labels = last10.map((_, i) => `Quiz ${i + 1}`);
-  const scores = last10.map((q) => q.percentage);
+  const scores = last10.map(q => q.percentage || 0);
 
   if (quizChart) quizChart.destroy();
-
   quizChart = new Chart(ctx, {
-    type: "line",
+    type: 'line',
     data: {
       labels,
-      datasets: [
-        {
-          label: "Score (%)",
-          data: scores,
-          backgroundColor: "rgba(72,187,120,.2)",
-          borderColor: "rgba(72,187,120,1)",
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4
-        }
-      ]
+      datasets: [{
+        label: 'Score (%)',
+        data: scores,
+        fill: true,
+        tension: 0.4
+      }]
     },
     options: {
       responsive: true,
-      scales: { y: { beginAtZero: true, max: 100 } }
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100
+        }
+      }
     }
   });
 }
 
 // ========= CLEAR ALL =========
 function clearAllData() {
-  if (
-    confirm("⚠️ This deletes ALL data. Continue?") &&
-    confirm("Are you REALLY sure?")
-  ) {
-    journalEntries = [];
-    quizHistory = [];
-    localStorage.clear();
-    displayJournalEntries();
-    updateProgressStats();
-    alert("All data has been cleared.");
-  }
+  if (!confirm('⚠️ This deletes ALL data. Continue?')) return;
+  if (!confirm('Are you REALLY sure?')) return;
+
+  journalEntries = [];
+  quizHistory = [];
+  localStorage.removeItem('journalEntries');
+  localStorage.removeItem('quizHistory');
+
+  displayJournalEntries();
+  updateProgressStats();
+  if (studyChart) studyChart.destroy();
+  if (quizChart) quizChart.destroy();
+  alert('All data has been cleared.');
 }
 
 window.clearAllData = clearAllData;
 
 // ========= INIT =========
-window.addEventListener("load", () => {
+window.addEventListener('load', () => {
   displayJournalEntries();
   updateProgressStats();
 });
