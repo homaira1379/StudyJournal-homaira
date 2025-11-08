@@ -1,12 +1,15 @@
 // api/chat.js
-// Vercel serverless function for OpenAI quiz/summary
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
+
+  // This log is for Vercel function logs so we can SEE if env is loaded
+  console.log('OPENAI_API_KEY present?', !!apiKey);
 
   if (!apiKey) {
     return res.status(500).json({
@@ -15,9 +18,9 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { messages, model, temperature } = req.body || {};
+    const { model, messages, temperature } = req.body || {};
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,27 +29,27 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         model: model || 'gpt-4o-mini',
         messages: messages || [],
-        temperature:
-          typeof temperature === 'number' ? temperature : 0.7
+        temperature: typeof temperature === 'number' ? temperature : 0.7
       })
     });
 
-    const data = await response.json();
+    const data = await openaiRes.json();
 
-    if (!response.ok) {
-      console.error('OpenAI API error:', data);
-      return res.status(response.status).json({
+    if (!openaiRes.ok) {
+      console.error('OpenAI error:', openaiRes.status, data);
+      return res.status(openaiRes.status).json({
         error: 'OpenAI API error',
+        status: openaiRes.status,
         details: data
       });
     }
 
     return res.status(200).json(data);
-  } catch (err) {
-    console.error('Server error:', err);
+  } catch (error) {
+    console.error('Server error:', error);
     return res.status(500).json({
       error: 'Server error talking to OpenAI',
-      details: err.message
+      details: error.message
     });
   }
-};
+}
