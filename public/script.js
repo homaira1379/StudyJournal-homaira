@@ -82,6 +82,7 @@ function displayJournalEntries(filter = '') {
   }
 
   entryCount.textContent = list.length;
+
   const noteView = document.getElementById('noteView');
 
   if (list.length === 0) {

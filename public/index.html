@@ -73,10 +73,10 @@
 
     <!-- JOURNAL PAGE -->
     <div class="page" id="journal">
-      <h2 class="page-title">My Study Journal</h2>
+      <h2 style="color: var(--primary); margin-bottom: 30px;">My Study Journal</h2>
 
       <div class="journal-form">
-        <h3 class="section-title">Add New Entry</h3>
+        <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 22px;">Add New Entry</h3>
         <form id="journalForm">
           <div class="form-group">
             <label>Subject/Topic</label>
@@ -114,12 +114,12 @@
           onkeyup="searchEntries()" />
       </div>
 
-      <h3 class="section-title">
+      <h3 style="color: var(--primary); margin: 30px 0 20px; font-size: 22px;">
         Previous Entries (<span id="entryCount">0</span>)
       </h3>
 
       <div class="journal-entries" id="journalEntries">
-        <p class="muted centered">
+        <p style="color: var(--text-secondary); text-align: center; padding: 40px; font-size: 16px;">
           No entries yet. Start by adding your first study session!
         </p>
       </div>
@@ -160,10 +160,10 @@
 
     <!-- QUIZ PAGE -->
     <div class="page" id="quiz">
-      <h2 class="page-title">Take Quiz</h2>
+      <h2 style="color: var(--primary); margin-bottom: 30px;">Take Quiz</h2>
 
       <div class="quiz-section">
-        <h3 class="section-title">Generate Quiz by Topic</h3>
+        <h3 style="color: var(--primary); margin-bottom: 20px;">Generate Quiz by Topic</h3>
         <div class="form-group">
           <label>Select Topic</label>
           <select id="quizTopic">
@@ -191,7 +191,7 @@
 
     <!-- PROGRESS PAGE -->
     <div class="page" id="progress">
-      <h2 class="page-title">Your Progress</h2>
+      <h2 style="color: var(--primary); margin-bottom: 30px;">Your Progress</h2>
 
       <div class="streak-display">
         <h3 id="streakCount">0</h3>
@@ -235,13 +235,13 @@
       <div class="quiz-history">
         <h3>Quiz History</h3>
         <div id="quizHistoryList">
-          <p class="muted centered">
+          <p style="color: var(--text-secondary); text-align: center; padding: 20px; font-size: 16px;">
             No quizzes taken yet. Take your first quiz!
           </p>
         </div>
       </div>
 
-      <div class="centered" style="margin-top: 20px;">
+      <div style="margin-top: 20px; text-align: center;">
         <button class="btn btn-secondary" onclick="clearAllData()">Clear All Data</button>
       </div>
     </div>
@@ -288,10 +288,9 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </div> <!-- .content -->
+</div> <!-- .container -->
 
-<!-- Your app logic -->
 <script src="script.js"></script>
 </body>
 </html>
