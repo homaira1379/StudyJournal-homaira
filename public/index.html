@@ -6,11 +6,10 @@
   <title>Study Journal</title>
 
   <!-- Chart.js for charts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
 
-  <!-- jsPDF + html2canvas for PDF export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -55,15 +54,15 @@
         </div>
         <div class="feature-card">
           <h3>❓ Topic Quizzes</h3>
-          <p>Generate fresh quizzes on subjects like Math, History, Programming, and more.</p>
+          <p>Generate fresh quizzes on different subjects.</p>
         </div>
         <div class="feature-card">
           <h3>📊 Progress & Streaks</h3>
-          <p>Visualize your consistency, streak, and performance over time.</p>
+          <p>Visualize your consistency, streak, and performance.</p>
         </div>
         <div class="feature-card">
           <h3>🏆 Achievements</h3>
-          <p>Unlock badges as you study more and quiz regularly.</p>
+          <p>Unlock badges as you study and quiz regularly.</p>
         </div>
         <div class="feature-card">
           <h3>🎨 Themes</h3>
@@ -133,13 +132,13 @@
           <span id="viewDate"></span> ·
           <span id="viewDuration"></span> minutes
         </div>
-        <div id="viewContent"></div>
+        <div id="viewContent" class="note-content"></div>
 
         <div class="ai-actions">
           <button class="btn btn-small" id="btnSummary">🧠 Summarize with AI</button>
           <button class="btn btn-small" id="btnNoteQuiz">❓ Generate AI Quiz from This Note</button>
-          <button class="btn btn-small btn-outline" id="btnExportPdf">
-            📄 Export Note + Summary + Quiz (PDF)
+          <button class="btn btn-small btn-outline" id="btnExportPDF">
+            📄 Export Note + AI to PDF
           </button>
         </div>
 
@@ -263,7 +262,7 @@
         <ul>
           <li>Add study notes with subject, duration, and reflections.</li>
           <li>Select a note → use AI to summarize and generate a custom quiz.</li>
-          <li>Use the Take Quiz page to generate topic-based quizzes any time.</li>
+          <li>Use the Take Quiz page to generate topic-based quizzes.</li>
           <li>View your streak, charts, and badges on the Progress page.</li>
         </ul>
       </div>
@@ -279,23 +278,20 @@
         </div>
         <div class="contact-item">
           <strong>💼 LinkedIn:</strong>
-          <a href="https://www.linkedin.com/in/homaira-yousufi-6983311b5" target="_blank">
-            linkedin.com/in/homaira-yousufi-6983311b5
-          </a>
+          <a href="https://www.linkedin.com/in/homaira-yousufi-6983311b5"
+             target="_blank">linkedin.com/in/homaira-yousufi-6983311b5</a>
         </div>
         <div class="contact-item">
           <strong>💻 GitHub:</strong>
-          <a href="https://github.com/homaira1379" target="_blank">
-            github.com/homaira1379
-          </a>
+          <a href="https://github.com/homaira1379"
+             target="_blank">github.com/homaira1379</a>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-  </div> <!-- .content -->
-</div> <!-- .container -->
-
-<!-- Your JS logic -->
+<!-- Your app logic -->
 <script src="script.js"></script>
 </body>
 </html>

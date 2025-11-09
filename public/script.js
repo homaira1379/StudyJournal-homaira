@@ -82,7 +82,6 @@ function displayJournalEntries(filter = '') {
   }
 
   entryCount.textContent = list.length;
-
   const noteView = document.getElementById('noteView');
 
   if (list.length === 0) {
@@ -119,7 +118,7 @@ function deleteEntry(id) {
   displayJournalEntries();
 }
 
-// expose viewEntry globally
+// ========= VIEW ENTRY =========
 window.viewEntry = function (id) {
   const entry = journalEntries.find(e => e.id === id);
   if (!entry) return;
@@ -141,7 +140,7 @@ window.viewEntry = function (id) {
   if (noteView) noteView.classList.remove('hidden');
 };
 
-// ========= AI HELPERS (calls /api/chat) =========
+// ========= AI HELPERS (/api/chat) =========
 async function callOpenAI(body) {
   try {
     const res = await fetch('/api/chat', {
@@ -166,7 +165,7 @@ async function callOpenAI(body) {
   }
 }
 
-// AI summary for selected note
+// ========= AI SUMMARY =========
 const btnSummary = document.getElementById('btnSummary');
 if (btnSummary) {
   btnSummary.addEventListener('click', async () => {
@@ -199,7 +198,7 @@ if (btnSummary) {
   });
 }
 
-// AI quiz from selected note
+// ========= AI QUIZ FROM NOTE =========
 const btnNoteQuiz = document.getElementById('btnNoteQuiz');
 if (btnNoteQuiz) {
   btnNoteQuiz.addEventListener('click', async () => {
@@ -259,7 +258,7 @@ ${entry.notes}`
   });
 }
 
-// ========= EXPORT CURRENT NOTE + SUMMARY + QUIZ AS PDF =========
+// ========= EXPORT CURRENT NOTE + AI TO PDF =========
 const exportPdfBtn = document.getElementById('btnExportPDF');
 if (exportPdfBtn) {
   exportPdfBtn.addEventListener('click', exportCurrentNotePdf);
@@ -281,7 +280,6 @@ function exportCurrentNotePdf() {
     (document.getElementById('viewSummary')?.innerText || '').trim() ||
     'No AI summary generated yet.';
 
-  // Collect quiz items
   const quizItems = document.querySelectorAll('#viewQuiz li');
   const quizLines = [];
   quizItems.forEach((li) => {
@@ -333,7 +331,6 @@ function exportCurrentNotePdf() {
     y += lineHeight / 2;
   }
 
-  // Title
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
   doc.text('Study Journal - Note Export', margin, y);
@@ -352,7 +349,7 @@ function exportCurrentNotePdf() {
   doc.save(`study-note-${safeSubject || 'export'}.pdf`);
 }
 
-// ========= TOPIC QUIZ (QUIZ PAGE) =========
+// ========= TOPIC QUIZ =========
 let currentQuiz = null;
 let userAnswers = [];
 
@@ -494,7 +491,7 @@ function calculateStreak() {
     const d = new Date(e.timestamp);
     d.setHours(0,0,0,0);
     return d.getTime();
-  }))].sort((a,b) => b - a);
+  }))].sort((a, b) => b - a);
 
   let streak = 0;
   let current = new Date();
@@ -569,7 +566,7 @@ function updateProgressStats() {
   displayQuizHistory();
 }
 
-// Charts
+// ========= CHARTS =========
 let studyChart = null;
 let quizChart = null;
 
