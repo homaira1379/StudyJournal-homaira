@@ -45,27 +45,29 @@ const journalContainer = document.getElementById('journalEntries');
 const entryCount = document.getElementById('entryCount');
 let selectedEntryIndex = null;
 
-journalForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const subject = document.getElementById('subject').value.trim();
-  const duration = parseInt(document.getElementById('duration').value, 10) || 0;
-  const notes = document.getElementById('notes').value.trim();
+if (journalForm) {
+  journalForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const subject = document.getElementById('subject').value.trim();
+    const duration = parseInt(document.getElementById('duration').value, 10) || 0;
+    const notes = document.getElementById('notes').value.trim();
 
-  const entry = {
-    id: Date.now(),
-    subject,
-    duration,
-    notes,
-    date: new Date().toLocaleDateString(),
-    timestamp: new Date().toISOString()
-  };
+    const entry = {
+      id: Date.now(),
+      subject,
+      duration,
+      notes,
+      date: new Date().toLocaleDateString(),
+      timestamp: new Date().toISOString()
+    };
 
-  journalEntries.unshift(entry);
-  saveData();
-  journalForm.reset();
-  displayJournalEntries();
-  alert('Entry saved successfully! 🎉');
-});
+    journalEntries.unshift(entry);
+    saveData();
+    journalForm.reset();
+    displayJournalEntries();
+    alert('Entry saved successfully! 🎉');
+  });
+}
 
 function displayJournalEntries(filter = '') {
   if (!journalContainer) return;
@@ -81,12 +83,14 @@ function displayJournalEntries(filter = '') {
 
   entryCount.textContent = list.length;
 
+  const noteView = document.getElementById('noteView');
+
   if (list.length === 0) {
     journalContainer.innerHTML = `
       <p style="color: var(--text-secondary); text-align: center; padding: 30px;">
         No entries found.
       </p>`;
-    document.getElementById('noteView').classList.add('hidden');
+    if (noteView) noteView.classList.add('hidden');
     return;
   }
 
@@ -134,7 +138,7 @@ window.viewEntry = function (id) {
   document.getElementById('viewQuiz').innerHTML =
     '<li class="muted">Click "Generate AI Quiz from This Note" to create questions.</li>';
 
-  noteView.classList.remove('hidden');
+  if (noteView) noteView.classList.remove('hidden');
 };
 
 // ========= AI HELPERS (calls /api/chat) =========
@@ -145,8 +149,14 @@ async function callOpenAI(body) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    if (!res.ok) throw new Error(`API error (${res.status})`);
+
     const data = await res.json();
+
+    if (!res.ok) {
+      console.error('OpenAI API error:', data);
+      throw new Error(data.error || `API error (${res.status})`);
+    }
+
     const content = data.choices?.[0]?.message?.content;
     if (!content) throw new Error('No content from AI');
     return content.trim();
@@ -157,53 +167,58 @@ async function callOpenAI(body) {
 }
 
 // AI summary for selected note
-document.getElementById('btnSummary').addEventListener('click', async () => {
-  const summaryBox = document.getElementById('viewSummary');
+const btnSummary = document.getElementById('btnSummary');
+if (btnSummary) {
+  btnSummary.addEventListener('click', async () => {
+    const summaryBox = document.getElementById('viewSummary');
 
-  if (selectedEntryIndex === null) {
-    summaryBox.textContent = 'Please select an entry first.';
-    return;
-  }
+    if (selectedEntryIndex === null) {
+      summaryBox.textContent = 'Please select an entry first.';
+      return;
+    }
 
-  const entry = journalEntries[selectedEntryIndex];
-  summaryBox.textContent = '✏️ Summarizing with AI...';
+    const entry = journalEntries[selectedEntryIndex];
+    summaryBox.textContent = '✏️ Summarizing with AI...';
 
-  try {
-    const content = await callOpenAI({
-      model: 'gpt-4o-mini',
-      messages: [{
-        role: 'user',
-        content: `Summarize this study note in 3 clear bullet points for a student:\n\n${entry.notes}`
-      }],
-      temperature: 0.4
-    });
-    summaryBox.textContent = content;
-  } catch {
-    summaryBox.innerHTML = `
-      <div class="api-warning">
-        Could not get AI summary. Check your API key / deployment.
-      </div>`;
-  }
-});
+    try {
+      const content = await callOpenAI({
+        model: 'gpt-4o-mini',
+        messages: [{
+          role: 'user',
+          content: `Summarize this study note in 3 clear bullet points for a student:\n\n${entry.notes}`
+        }],
+        temperature: 0.4
+      });
+      summaryBox.textContent = content;
+    } catch {
+      summaryBox.innerHTML = `
+        <div class="api-warning">
+          Could not get AI summary. Check your API key / deployment.
+        </div>`;
+    }
+  });
+}
 
 // AI quiz from selected note
-document.getElementById('btnNoteQuiz').addEventListener('click', async () => {
-  const quizList = document.getElementById('viewQuiz');
+const btnNoteQuiz = document.getElementById('btnNoteQuiz');
+if (btnNoteQuiz) {
+  btnNoteQuiz.addEventListener('click', async () => {
+    const quizList = document.getElementById('viewQuiz');
 
-  if (selectedEntryIndex === null) {
-    quizList.innerHTML = '<li class="muted">Please select an entry first.</li>';
-    return;
-  }
+    if (selectedEntryIndex === null) {
+      quizList.innerHTML = '<li class="muted">Please select an entry first.</li>';
+      return;
+    }
 
-  const entry = journalEntries[selectedEntryIndex];
-  quizList.innerHTML = '<li class="muted">Generating AI quiz questions...</li>';
+    const entry = journalEntries[selectedEntryIndex];
+    quizList.innerHTML = '<li class="muted">Generating AI quiz questions...</li>';
 
-  try {
-    const content = await callOpenAI({
-      model: 'gpt-4o-mini',
-      messages: [{
-        role: 'user',
-        content:
+    try {
+      const content = await callOpenAI({
+        model: 'gpt-4o-mini',
+        messages: [{
+          role: 'user',
+          content:
 `Create 3 multiple choice questions from this note. 
 Return ONLY JSON array like:
 [
@@ -211,38 +226,131 @@ Return ONLY JSON array like:
 ]
 Note text:
 ${entry.notes}`
-      }],
-      temperature: 0.7
+        }],
+        temperature: 0.7
+      });
+
+      let quiz;
+      try {
+        quiz = JSON.parse(content);
+      } catch {
+        const cleaned = content.replace(/```json|```/gi, '').trim();
+        quiz = JSON.parse(cleaned);
+      }
+
+      if (!Array.isArray(quiz)) throw new Error('Bad quiz format');
+
+      quizList.innerHTML = quiz.map((q, i) => `
+        <li>
+          <strong>Q${i + 1}:</strong> ${q.question}<br/>
+          ${q.options.map((opt, idx) =>
+            `${String.fromCharCode(65 + idx)}. ${opt}`
+          ).join('<br/>')}
+          <br/><em>Answer: ${String.fromCharCode(65 + (q.correctAnswer || 0))}</em>
+        </li>
+      `).join('');
+    } catch (err) {
+      console.error(err);
+      quizList.innerHTML = `
+        <li class="muted">
+          Could not generate AI quiz. Please confirm your backend / OpenAI key.
+        </li>`;
+    }
+  });
+}
+
+// ========= EXPORT CURRENT NOTE + SUMMARY + QUIZ AS PDF =========
+const exportPdfBtn = document.getElementById('btnExportPDF');
+if (exportPdfBtn) {
+  exportPdfBtn.addEventListener('click', exportCurrentNotePdf);
+}
+
+function exportCurrentNotePdf() {
+  if (selectedEntryIndex === null) {
+    alert('Please select an entry first.');
+    return;
+  }
+
+  const entry = journalEntries[selectedEntryIndex];
+  if (!entry) {
+    alert('Could not find this entry.');
+    return;
+  }
+
+  const summaryText =
+    (document.getElementById('viewSummary')?.innerText || '').trim() ||
+    'No AI summary generated yet.';
+
+  // Collect quiz items
+  const quizItems = document.querySelectorAll('#viewQuiz li');
+  const quizLines = [];
+  quizItems.forEach((li) => {
+    const text = li.innerText.replace(/\s+\n/g, ' ').trim();
+    if (
+      text &&
+      !/Generate quick revision/i.test(text) &&
+      !/Could not generate AI quiz/i.test(text) &&
+      !/Please select an entry first/i.test(text)
+    ) {
+      quizLines.push(text);
+    }
+  });
+
+  const jspdf = window.jspdf;
+  if (!jspdf || !jspdf.jsPDF) {
+    alert('PDF library not loaded.');
+    return;
+  }
+
+  const doc = new jspdf.jsPDF({ unit: 'pt', format: 'a4' });
+  const margin = 40;
+  const lineHeight = 16;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let y = margin;
+
+  function addSection(title, text) {
+    if (!text) return;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text(title, margin, y);
+    y += lineHeight;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+
+    const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
+    lines.forEach((line) => {
+      if (y > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
+      doc.text(line, margin, y);
+      y += lineHeight;
     });
 
-    let quiz;
-    try {
-      quiz = JSON.parse(content);
-    } catch {
-      // model might add ```json fences; strip them
-      const cleaned = content.replace(/```json|```/gi, '').trim();
-      quiz = JSON.parse(cleaned);
-    }
-
-    if (!Array.isArray(quiz)) throw new Error('Bad quiz format');
-
-    quizList.innerHTML = quiz.map((q, i) => `
-      <li>
-        <strong>Q${i + 1}:</strong> ${q.question}<br/>
-        ${q.options.map((opt, idx) =>
-          `${String.fromCharCode(65 + idx)}. ${opt}`
-        ).join('<br/>')}
-        <br/><em>Answer: ${String.fromCharCode(65 + (q.correctAnswer || 0))}</em>
-      </li>
-    `).join('');
-  } catch (err) {
-    console.error(err);
-    quizList.innerHTML = `
-      <li class="muted">
-        Could not generate AI quiz. Please confirm your backend / OpenAI key.
-      </li>`;
+    y += lineHeight / 2;
   }
-});
+
+  // Title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('Study Journal - Note Export', margin, y);
+  y += lineHeight * 2;
+
+  addSection('Subject', entry.subject || '');
+  addSection('Date & Duration', `${entry.date || ''}  •  ${entry.duration || 0} min`);
+  addSection('Notes', entry.notes || '');
+  addSection('AI Summary', summaryText);
+
+  if (quizLines.length) {
+    addSection('AI Quiz (Based on This Note)', quizLines.join('\n\n'));
+  }
+
+  const safeSubject = (entry.subject || 'note').toLowerCase().replace(/[^a-z0-9]+/gi, '-');
+  doc.save(`study-note-${safeSubject || 'export'}.pdf`);
+}
 
 // ========= TOPIC QUIZ (QUIZ PAGE) =========
 let currentQuiz = null;
@@ -300,6 +408,11 @@ Return ONLY JSON:
 
 function renderQuiz() {
   const quizContent = document.getElementById('quizContent');
+  if (!currentQuiz || !currentQuiz.length) {
+    quizContent.innerHTML = '';
+    return;
+  }
+
   quizContent.innerHTML = `
     <div class="quiz-container">
       ${currentQuiz.map((q, qi) => `
@@ -392,7 +505,6 @@ function calculateStreak() {
       streak++;
       current.setDate(current.getDate() - 1);
     } else if (time === current.getTime() - 86400000) {
-      // allow previous day
       streak++;
       current.setDate(current.getDate() - 1);
     } else break;
