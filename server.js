@@ -18,23 +18,19 @@ if (!process.env.OPENAI_API_KEY) {
   );
 }
 
-// --- CORS (includes React dev + built app) ---
+// allow your frontend origins (during dev)
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",       // production (Express serving React)
-      "http://127.0.0.1:5500",       // old live server if you still use it
-      "http://localhost:5173",       // Vite dev server
-    ],
+    origin: ["http://localhost:5173", "http://localhost:3000"],
     credentials: false,
   })
 );
 
 app.use(express.json());
 
-// ──────────────────────────────────────────────
-// API ROUTES
-// ──────────────────────────────────────────────
+// ========= Serve React build from client/dist =========
+const clientBuildPath = path.join(__dirname, "client", "dist");
+app.use(express.static(clientBuildPath));
 
 // health check
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
@@ -58,7 +54,7 @@ app.post("/api/chat", async (req, res) => {
       return res.status(r.status).json(data);
     }
 
-    // clean up choices[0].message.content so it is plain text (no ``` fences)
+    // normalize content (remove ```json fences if present)
     try {
       if (
         data.choices &&
@@ -67,14 +63,12 @@ app.post("/api/chat", async (req, res) => {
         typeof data.choices[0].message.content === "string"
       ) {
         let content = data.choices[0].message.content.trim();
-
         if (content.startsWith("```")) {
           content = content
             .replace(/^```(?:json)?/i, "")
             .replace(/```$/, "")
             .trim();
         }
-
         data.choices[0].message.content = content;
       }
     } catch (e) {
@@ -90,21 +84,10 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-// ──────────────────────────────────────────────
-// SERVE REACT BUILD (instead of /public)
-// ──────────────────────────────────────────────
-
-const clientDistPath = path.join(__dirname, "client", "dist");
-
-// serve static files from React build
-app.use(express.static(clientDistPath));
-
-// for any non-API route, send React index.html
+// ========= Catch-all route: send React index.html =========
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(clientDistPath, "index.html"));
+  res.sendFile(path.join(clientBuildPath, "index.html"));
 });
-
-// ──────────────────────────────────────────────
 
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
