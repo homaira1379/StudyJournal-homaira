@@ -13,7 +13,7 @@ Deployed on **Vercel** with an **AI backend using the OpenAI API**.
 
 ## 🚀 Live Demo
 
-- **Live App:** (https://study-journal-homaira-ky33.vercel.app)
+- **Live App:** https://study-journal-homaira.vercel.app
 - **GitHub Repo:** https://github.com/homaira1379/StudyJournal-homaira
 
 ---
