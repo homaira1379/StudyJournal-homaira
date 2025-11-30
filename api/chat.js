@@ -1,35 +1,120 @@
-import OpenAI from "openai";
+// api/chat.js
+// Node / Vercel Serverless function (CommonJS)
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    res.status(405).json({ error: "Method not allowed" });
+    return;
   }
 
-  const { message } = req.body;
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: "Missing OpenAI API Key" });
+    res.status(500).json({ error: "OPENAI_API_KEY is not set on the server" });
+    return;
   }
 
   try {
-    const openai = new OpenAI({ apiKey });
+    const { mode, noteContent, topic, numQuestions } = req.body || {};
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "You are a helpful study assistant." },
-        { role: "user", content: message }
-      ],
-      max_tokens: 200,
-    });
+    let userPrompt;
+    if (mode === "noteSummary") {
+      userPrompt = `
+You are a helpful study assistant. Read the student's note and produce a short,
+clear summary with 3–5 bullet points.
 
-    res.status(200).json({
-      reply: completion.choices[0].message.content,
-    });
+NOTE:
+${noteContent || ""}
 
-  } catch (err) {
-    console.error("AI ERROR:", err);
-    res.status(500).json({ error: "AI request failed" });
-  }
+Return ONLY the summary text, no extra explanation.
+`;
+    } else if (mode === "noteQuiz") {
+      userPrompt = `
+You are a quiz generator. Read the student's note and create 5 multiple-choice
+questions that help them review the material.
+
+Return JSON in this EXACT format (valid JSON, no comments):
+
+{
+  "questions": [
+    {
+      "question": "string",
+      "options": ["A", "B", "C", "D"],
+      "answer": "A"
+    }
+  ]
 }
+
+NOTE:
+${noteContent || ""}
+`;
+    } else if (mode === "topicQuiz") {
+      const count = numQuestions || 5;
+      userPrompt = `
+Create ${count} multiple-choice questions to test a student's knowledge of:
+"${topic || "general knowledge"}".
+
+Return JSON in this EXACT format (valid JSON, no comments):
+
+{
+  "questions": [
+    {
+      "question": "string",
+      "options": ["A", "B", "C", "D"],
+      "answer": "A"
+    }
+  ]
+}
+`;
+    } else {
+      res.status(400).json({ error: "Invalid mode" });
+      return;
+    }
+
+    // Call OpenAI Chat Completions API
+    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: "You are a helpful study assistant." },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.7,
+      }),
+    });
+
+    if (!openaiResponse.ok) {
+      const errorText = await openaiResponse.text();
+      console.error("OpenAI API error:", errorText);
+      res.status(500).json({ error: "OpenAI API error" });
+      return;
+    }
+
+    const data = await openaiResponse.json();
+    const text = data.choices[0].message.content.trim();
+
+    // Shape the response for the frontend
+    if (mode === "noteSummary") {
+      res.status(200).json({ summary: text });
+    } else {
+      // For quizzes we asked for JSON; try to parse it
+      let quizJson;
+      try {
+        quizJson = JSON.parse(text);
+      } catch (e) {
+        console.error("Failed to parse quiz JSON from model:", text);
+        res.status(500).json({ error: "Failed to parse quiz JSON from AI" });
+        return;
+      }
+      res.status(200).json({ questions: quizJson.questions || [] });
+    }
+  } catch (err) {
+    console.error("Server error in /api/chat:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
