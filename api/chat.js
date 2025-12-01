@@ -1,120 +1,119 @@
 // api/chat.js
-// Node / Vercel Serverless function (CommonJS)
+
+const fetch = require('node-fetch');
 
 module.exports = async (req, res) => {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
-  }
-
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    res.status(500).json({ error: "OPENAI_API_KEY is not set on the server" });
-    return;
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error('Missing OPENAI_API_KEY in environment variables');
+      return res.status(500).json({ error: 'Server configuration error.' });
+    }
+
     const { mode, noteContent, topic, numQuestions } = req.body || {};
 
-    let userPrompt;
-    if (mode === "noteSummary") {
-      userPrompt = `
-You are a helpful study assistant. Read the student's note and produce a short,
-clear summary with 3–5 bullet points.
+    let prompt = '';
+
+    if (mode === 'summary') {
+      prompt = `
+You are a helpful study assistant. Summarize the following student's study note
+into 4–6 concise bullet points. Focus on key concepts, definitions, and any
+important relationships. Use clear, simple language.
 
 NOTE:
-${noteContent || ""}
+${noteContent}
+      `;
+    } else if (mode === 'note-quiz') {
+      prompt = `
+You are a quiz generator. Based ONLY on the student's note below, create 5
+short multiple-choice questions. For each question, provide:
 
-Return ONLY the summary text, no extra explanation.
-`;
-    } else if (mode === "noteQuiz") {
-      userPrompt = `
-You are a quiz generator. Read the student's note and create 5 multiple-choice
-questions that help them review the material.
+- question
+- 4 options labeled A, B, C, D
+- the correct option letter
+- a 1-sentence explanation
 
-Return JSON in this EXACT format (valid JSON, no comments):
-
-{
-  "questions": [
-    {
-      "question": "string",
-      "options": ["A", "B", "C", "D"],
-      "answer": "A"
-    }
-  ]
-}
+Return the result as JSON with this shape:
+[
+  {
+    "question": "...",
+    "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+    "answer": "A",
+    "explanation": "..."
+  }
+]
 
 NOTE:
-${noteContent || ""}
-`;
-    } else if (mode === "topicQuiz") {
+${noteContent}
+      `;
+    } else if (mode === 'topic-quiz') {
       const count = numQuestions || 5;
-      userPrompt = `
-Create ${count} multiple-choice questions to test a student's knowledge of:
-"${topic || "general knowledge"}".
+      prompt = `
+Create ${count} multiple-choice questions to test a student on the topic:
+"${topic}".
 
-Return JSON in this EXACT format (valid JSON, no comments):
+Each question should be medium difficulty and concept-focused.
+For each question, provide:
 
-{
-  "questions": [
-    {
-      "question": "string",
-      "options": ["A", "B", "C", "D"],
-      "answer": "A"
-    }
-  ]
-}
-`;
+- question
+- 4 options labeled A, B, C, D
+- the correct option letter
+- a 1-sentence explanation
+
+Return the result as JSON with this shape:
+[
+  {
+    "question": "...",
+    "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+    "answer": "A",
+    "explanation": "..."
+  }
+]
+      `;
     } else {
-      res.status(400).json({ error: "Invalid mode" });
-      return;
+      return res.status(400).json({ error: 'Invalid mode' });
     }
 
-    // Call OpenAI Chat Completions API
-    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
+    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: 'gpt-4.1-mini',
         messages: [
-          { role: "system", content: "You are a helpful study assistant." },
-          { role: "user", content: userPrompt },
+          { role: 'system', content: 'You are a helpful study assistant.' },
+          { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
-      }),
+        temperature: 0.7
+      })
     });
 
-    if (!openaiResponse.ok) {
-      const errorText = await openaiResponse.text();
-      console.error("OpenAI API error:", errorText);
-      res.status(500).json({ error: "OpenAI API error" });
-      return;
+    if (!openaiRes.ok) {
+      const errText = await openaiRes.text();
+      console.error('OpenAI API error:', openaiRes.status, errText);
+      return res.status(500).json({ error: 'Failed to contact AI service.' });
     }
 
-    const data = await openaiResponse.json();
-    const text = data.choices[0].message.content.trim();
+    const data = await openaiRes.json();
+    const content = data.choices?.[0]?.message?.content || '';
 
-    // Shape the response for the frontend
-    if (mode === "noteSummary") {
-      res.status(200).json({ summary: text });
-    } else {
-      // For quizzes we asked for JSON; try to parse it
-      let quizJson;
-      try {
-        quizJson = JSON.parse(text);
-      } catch (e) {
-        console.error("Failed to parse quiz JSON from model:", text);
-        res.status(500).json({ error: "Failed to parse quiz JSON from AI" });
-        return;
-      }
-      res.status(200).json({ questions: quizJson.questions || [] });
+    // Try to parse JSON if it looks like quiz output, otherwise return raw summary text
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch (e) {
+      parsed = content.trim();
     }
+
+    res.status(200).json({ result: parsed });
   } catch (err) {
-    console.error("Server error in /api/chat:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error('Serverless /api/chat error:', err);
+    res.status(500).json({ error: 'Unexpected server error.' });
   }
 };
