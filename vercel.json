@@ -1,13 +1,18 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "routes": [
-    {
-      "src": "/api/chat",
-      "dest": "/api/chat.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "client/dist/$1"
+
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/dist",
+
+  "functions": {
+    "api/chat.js": {
+      "runtime": "nodejs18.x"
     }
+  },
+
+  "rewrites": [
+    { "source": "/api/chat", "destination": "/api/chat.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
