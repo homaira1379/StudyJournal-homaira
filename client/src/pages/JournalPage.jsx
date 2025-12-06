@@ -110,14 +110,19 @@ function JournalPage() {
 
   const handleGenerateSummary = async () => {
     if (!selectedEntry) return;
+
     const text = await callOpenAI(
       `Summarize these study notes in 3–5 bullet points for a student:\n\n${selectedEntry.notes}`
     );
-    setAiSummary(text || "");
+
+    if (!text) return;
+    setAiError("");        // clear old error on success
+    setAiSummary(text);    // show summary
   };
 
   const handleGenerateQuiz = async () => {
     if (!selectedEntry) return;
+
     const text = await callOpenAI(
       `Create 3 short quiz questions (with answers) from these study notes. 
 Return as a simple numbered list with question and answer:\n\n${selectedEntry.notes}`
@@ -126,7 +131,9 @@ Return as a simple numbered list with question and answer:\n\n${selectedEntry.no
 
     const lines = text.split("\n").filter((l) => l.trim() !== "");
     const parsed = lines.map((line) => line.trim());
-    setAiQuiz(parsed);
+
+    setAiError("");       // clear old error on success
+    setAiQuiz(parsed);    // show quiz
   };
 
   return (
@@ -204,7 +211,13 @@ Return as a simple numbered list with question and answer:\n\n${selectedEntry.no
               <article
                 key={entry.id}
                 className="journal-entry"
-                onClick={() => setSelectedEntry(entry)}
+                onClick={() => {
+                  setSelectedEntry(entry);
+                  // clear previous AI outputs when switching entries
+                  setAiSummary("");
+                  setAiQuiz([]);
+                  setAiError("");
+                }}
               >
                 <h4>{entry.subject}</h4>
                 <div className="meta">
