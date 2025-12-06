@@ -1,104 +1,66 @@
 // api/chat.js
-// Vercel serverless function for all AI features
+// Vercel serverless function that proxies chat requests to OpenAI
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = "gpt-4o-mini";
-
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  // Only allow POST from the frontend
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) {
-    console.error("Missing OPENAI_API_KEY environment variable");
-    return res.status(500).json({
-      error: "Server misconfigured: missing OpenAI API key."
-    });
+    console.error("Missing OPENAI_API_KEY");
+    return res
+      .status(500)
+      .json({ error: "Missing OPENAI_API_KEY in environment variables" });
   }
 
-  let body = {};
+  // Vercel may give body as object or string
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (err) {
+      console.error("Invalid JSON body:", err);
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+  }
+
+  const { model, messages } = body || {};
+  if (!model || !messages) {
+    console.error("Missing model or messages in body:", body);
+    return res.status(400).json({ error: "Missing model or messages" });
+  }
+
   try {
-    if (typeof req.body === "string") {
-      body = JSON.parse(req.body || "{}");
-    } else {
-      body = req.body || {};
+    const openaiRes = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({ model, messages }),
+      }
+    );
+
+    const data = await openaiRes.json();
+
+    if (!openaiRes.ok) {
+      console.error("OpenAI API error:", data);
+      return res
+        .status(500)
+        .json({ error: "OpenAI API error", detail: data });
     }
+
+    // Return the full OpenAI-style response back to the frontend
+    return res.status(200).json(data);
   } catch (err) {
-    console.error("Failed to parse request body:", err);
-    return res.status(400).json({ error: "Invalid JSON in request body." });
-  }
-
-  const { mode, notes, topic, numQuestions } = body;
-  if (!mode) {
-    return res.status(400).json({ error: "Missing 'mode' field in request." });
-  }
-
-  try {
-    let systemPrompt = "";
-    let userPrompt = "";
-
-    if (mode === "summary") {
-      if (!notes) return res.status(400).json({ error: "Missing 'notes'." });
-
-      systemPrompt = "You are a helpful study assistant.";
-      userPrompt = `Summarize these notes:\n\n${notes}`;
-    }
-
-    else if (mode === "note-quiz") {
-      if (!notes) return res.status(400).json({ error: "Missing 'notes'." });
-
-      systemPrompt = "You are a quiz generator.";
-      userPrompt = `Generate multiple-choice questions based ONLY on these notes:\n\n${notes}`;
-    }
-
-    else if (mode === "topic-quiz") {
-      if (!topic) return res.status(400).json({ error: "Missing 'topic'." });
-
-      const count = Number(numQuestions) || 5;
-
-      systemPrompt = "You are a quiz generator.";
-      userPrompt = `Generate ${count} MCQs about: ${topic}`;
-    }
-
-    const openaiResponse = await fetch(OPENAI_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ]
-      })
-    });
-
-    if (!openaiResponse.ok) {
-      const errText = await openaiResponse.text();
-      console.error("OpenAI error:", errText);
-      return res.status(500).json({
-        error: "OpenAI API request failed.",
-        detail: errText
-      });
-    }
-
-    const data = await openaiResponse.json();
-    const content = data?.choices?.[0]?.message?.content?.trim();
-
-    if (!content) {
-      return res.status(500).json({ error: "Empty AI response." });
-    }
-
-    return res.status(200).json({ result: content });
-
-  } catch (err) {
-    console.error("Server error:", err);
+    console.error("Unexpected server error:", err);
     return res.status(500).json({
-      error: "Unexpected server error.",
-      detail: String(err)
+      error: "Unexpected server error",
+      detail: err.message,
     });
   }
-};
+}
